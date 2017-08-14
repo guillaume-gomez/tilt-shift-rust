@@ -1,0 +1,4 @@
+[package]
+name = "tilt-shift"
+version = "0.1.0"
+authors = ["Gomez Guillaume <guillaume.gomez846@gmail.com>"]
