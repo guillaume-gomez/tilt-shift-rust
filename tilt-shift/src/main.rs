@@ -8,14 +8,12 @@ use std::path::Path;
 use image::{
     GenericImage,
     FilterType,
-    ImageBuffer,
-    Pixel,
-    Rgb
+    ImageBuffer
 };
 
 
 // wip shoud understand why rust in soooooo complex about return function
-fn create_mask(width: u32, height: u32, x_rect: u32, y_rect: u32, width_rect: u32, height_rect: u32) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+fn create_mask (width: u32, height: u32, x_rect: u32, y_rect: u32, width_rect: u32, height_rect: u32) -> ImageBuffer<image::Luma<u8>, std::vec::Vec<u8>> {
     let img_created = ImageBuffer::from_fn(width, height, |x, y| {
 
         if x >= x_rect && x <= x_rect + width_rect && y >= y_rect && y <= y_rect + height_rect {
@@ -24,7 +22,7 @@ fn create_mask(width: u32, height: u32, x_rect: u32, y_rect: u32, width_rect: u3
             image::Luma([255u8])
         }
     });
-    img_created;
+    img_created
 }
 
 fn main() {
@@ -50,7 +48,8 @@ fn main() {
     // Write the contents of this image to the Writer in PNG format.
     filtered.save(fout, image::PNG).unwrap();
 
-    let img_created = create_mask(400,400, 5, 20, 30, 50);
-    let path = &Path::new("temp.png");
+    let img_created = create_mask(140,400, 5, 20, 30, 50);
+    let path = &Path::new("tempbite.png");
+    img_created.save(path);
     //Write the contents of this image to the Writer in PNG format.
 }
