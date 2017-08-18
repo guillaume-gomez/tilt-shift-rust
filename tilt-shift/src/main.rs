@@ -70,7 +70,11 @@ fn main() {
     let final_image_without_saturation = ImageBuffer::from_fn(600, 600, |x, y| {
         let pixel_target = blend_image.get_pixel(x, y);
         let pixel_source = filtered_blurred.get_pixel(x, y);
-        image::Rgba([pixel_mask.data[0], pixel_mask.data[1], pixel_mask.data[2], pixel_blend.data[0]])
+        if pixel_target[3] != 0 {
+            image::Rgb([pixel_target.data[0], pixel_target.data[1], pixel_target.data[2]])
+        } else {
+            image::Rgb([pixel_source.data[0], pixel_source.data[1], pixel_source.data[2]])
+        }
     });
     final_image_without_saturation.save(&Path::new("result.png")).unwrap();
 
