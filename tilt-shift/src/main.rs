@@ -41,7 +41,7 @@ fn main() {
     // The color method returns the image's ColorType
     println!("{:?}", img.color());
     println!("start filtered blured");
-    let filtered = img.fliph().resize_exact(600, 600, FilterType::Nearest);
+    let filtered = img.resize_exact(600, 600, FilterType::Nearest);
     let fout = &mut File::create(&Path::new(&format!("{}.png", file))).unwrap();
 
     // Write the contents of this image to the Writer in PNG format.
