@@ -58,7 +58,7 @@ fn main() {
     //let fout2 = &mut File::create(path_2).unwrap();
     //mask_blurred.save(fout2, image::PNG).unwrap();
     println!("start blend_image ");
-    let mut blend_image = ImageBuffer::from_fn(600, 600, |x, y| {
+    let blend_image = ImageBuffer::from_fn(600, 600, |x, y| {
         let pixel_image = filtered.get_pixel(x, y);
         let pixel_mask = mask_blurred.get_pixel(x, y);
         image::Rgba([pixel_image.data[0], pixel_image.data[1], pixel_image.data[2], 255 - pixel_mask.data[0]])
@@ -70,7 +70,7 @@ fn main() {
     let filtered_blurred = filtered.blur(2.5);
     let mut final_image_without_saturation = image::ImageBuffer::new(600, 600);
     for(x, y, pixel) in final_image_without_saturation.enumerate_pixels_mut() {
-        let pixel_target = blend_image.get_pixel_mut(x, y);
+        let pixel_target = blend_image.get_pixel(x, y);
         let mut pixel_source = filtered_blurred.get_pixel(x, y);
         pixel_source.blend(&pixel_target);
         *pixel = image::Rgba([pixel_source.data[0], pixel_source.data[1], pixel_source.data[2], pixel_source.data[3]])
