@@ -43,7 +43,7 @@ fn main() {
     println!("{:?}", img.color());
     println!("start filtered blured");
     let filtered = img.resize_exact(600, 600, FilterType::Nearest);
-    let fout = &mut File::create(&Path::new(&format!("{}.png", file))).unwrap();
+    let fout = &mut File::create(&Path::new(&format!("{}", file))).unwrap();
 
     // Write the contents of this image to the Writer in PNG format.
     filtered.save(fout, image::PNG).unwrap();
@@ -77,5 +77,9 @@ fn main() {
     }
     final_image_without_saturation.save(&Path::new("result.png")).unwrap();
 
-
+    let path_4 = &Path::new("result.png");
+    let final_image = image::open(path_4).unwrap().adjust_contrast(10.0);
+    let path_5 = &Path::new("final.png");
+    let fout_final = &mut File::create(path_5).unwrap();
+    final_image.save(fout_final, image::PNG).unwrap();
 }
