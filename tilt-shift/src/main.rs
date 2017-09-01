@@ -54,9 +54,7 @@ fn main() {
     mask.save(path).unwrap();
     println!("end mask ");
     let mask_blurred = image::open(path).unwrap().blur(10.0);
-    //let path_2 = &Path::new("mask_blurred.png");
-    //let fout2 = &mut File::create(path_2).unwrap();
-    //mask_blurred.save(fout2, image::PNG).unwrap();
+
     println!("start blend_image ");
     let blend_image = ImageBuffer::from_fn(600, 600, |x, y| {
         let pixel_image = filtered.get_pixel(x, y);
@@ -77,9 +75,9 @@ fn main() {
     }
     final_image_without_saturation.save(&Path::new("result.png")).unwrap();
 
-    let path_4 = &Path::new("result.png");
-    let final_image = image::open(path_4).unwrap().adjust_contrast(10.0);
-    let path_5 = &Path::new("final.png");
-    let fout_final = &mut File::create(path_5).unwrap();
+    let path_image_without_saturation = &Path::new("result.png");
+    let final_image = image::open(path_image_without_saturation).unwrap().adjust_contrast(10.0);
+    let path_final_result = &Path::new("final.png");
+    let fout_final = &mut File::create(path_final_result).unwrap();
     final_image.save(fout_final, image::PNG).unwrap();
 }
