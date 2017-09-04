@@ -71,7 +71,7 @@ fn main() {
         let pixel_target = blend_image.get_pixel(x, y);
         let mut pixel_source = filtered_blurred.get_pixel(x, y);
         pixel_source.blend(&pixel_target);
-        *pixel = image::Rgba([pixel_source.data[0], pixel_source.data[1], pixel_source.data[2], pixel_source.data[3]])
+        *pixel = image::Rgba(pixel_source.data)
     }
     final_image_without_saturation.save(&Path::new("result.png")).unwrap();
 
