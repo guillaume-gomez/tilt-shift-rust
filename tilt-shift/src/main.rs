@@ -44,26 +44,22 @@ fn main() {
         "result.png"
     };
 
-    // Use the open function to load an image from a PAth.
-    // ```open``` returns a dynamic image.
     let img = image::open(&Path::new(&file)).unwrap();
-
-    // The dimensions method returns the images width and height
-    println!("dimensions {:?}", img.dimensions());
+    let (width, height) = img.dimensions();
 
     // resize image
-    let filtered = img.resize_exact(600, 600, FilterType::Nearest);
+    let filtered = img.resize_exact(width, height, FilterType::Nearest);
 
-    let mask = create_mask(600, 600, 0, 150, 600, 350);
+    let mask = create_mask(width, height, 0, 150, height, 350);
 
-    let blend_image = ImageBuffer::from_fn(600, 600, |x, y| {
+    let blend_image = ImageBuffer::from_fn(width, height, |x, y| {
         let pixel_image = filtered.get_pixel(x, y);
         let pixel_mask = mask.get_pixel(x, y);
         image::Rgba([pixel_image.data[0], pixel_image.data[1], pixel_image.data[2], 255 - pixel_mask.data[0]])
     });
 
     let filtered_blurred = filtered.blur(blur);
-    let mut final_image_without_saturation_buff = image::ImageBuffer::new(600, 600);
+    let mut final_image_without_saturation_buff = image::ImageBuffer::new(width, height);
     for(x, y, pixel) in final_image_without_saturation_buff.enumerate_pixels_mut() {
         let pixel_target = blend_image.get_pixel(x, y);
         let mut pixel_source = filtered_blurred.get_pixel(x, y);
