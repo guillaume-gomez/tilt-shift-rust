@@ -38,6 +38,12 @@ fn main() {
 
     println!("Filename '{}' with the blur level '{}' and the contrast '{}'", file, blur, contrast);
 
+    let output_file = if args.len() == 5 {
+        &args[4]
+    } else {
+        "result.png"
+    };
+
     // Use the open function to load an image from a PAth.
     // ```open``` returns a dynamic image.
     let img = image::open(&Path::new(&file)).unwrap();
@@ -66,7 +72,7 @@ fn main() {
     }
 
     let final_image = image::ImageRgba8(final_image_without_saturation_buff).adjust_contrast(contrast);
-    let path_final_result = &Path::new("final.png");
+    let path_final_result = &Path::new(output_file);
     let fout_final = &mut File::create(path_final_result).unwrap();
     final_image.save(fout_final, image::PNG).unwrap();
 }
