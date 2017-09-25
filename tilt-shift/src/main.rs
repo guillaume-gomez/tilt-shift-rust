@@ -26,11 +26,17 @@ fn create_mask (width: u32, height: u32, x_rect: u32, y_rect: u32, width_rect: u
 }
 
 fn main() {
-    let file = if env::args().count() == 2 {
-        env::args().nth(1).unwrap()
-    } else {
-        panic!("Please enter a file")
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() < 4 {
+        panic!("Missing parameters, example : filename blur_level contrast_leve");
     };
+
+    let file = &args[1];
+    let blur = args[2].parse::<f32>().unwrap();
+    let contrast = args[3].parse::<f32>().unwrap();
+
+    println!("Filename '{}' with the blur level '{}' and the contrast '{}'", file, blur, contrast);
 
     // Use the open function to load an image from a PAth.
     // ```open``` returns a dynamic image.
@@ -39,24 +45,19 @@ fn main() {
     // The dimensions method returns the images width and height
     println!("dimensions {:?}", img.dimensions());
 
-    // The color method returns the image's ColorType
-    println!("{:?}", img.color());
-    println!("start filtered blured");
     // resize image
     let filtered = img.resize_exact(600, 600, FilterType::Nearest);
 
     // Write the contents of this image to the Writer in PNG format.
-    println!("start mask ");
-    let mask = create_mask(600, 600, 0, 200, 600, 200);
+    let mask = create_mask(600, 600, 0, 150, 600, 350);
 
-    println!("start blend_image ");
     let blend_image = ImageBuffer::from_fn(600, 600, |x, y| {
         let pixel_image = filtered.get_pixel(x, y);
         let pixel_mask = mask.get_pixel(x, y);
         image::Rgba([pixel_image.data[0], pixel_image.data[1], pixel_image.data[2], 255 - pixel_mask.data[0]])
     });
 
-    let filtered_blurred = filtered.blur(2.5);
+    let filtered_blurred = filtered.blur(blur);
     let mut final_image_without_saturation = image::ImageBuffer::new(600, 600);
     for(x, y, pixel) in final_image_without_saturation.enumerate_pixels_mut() {
         let pixel_target = blend_image.get_pixel(x, y);
@@ -67,7 +68,7 @@ fn main() {
     final_image_without_saturation.save(&Path::new("result.png")).unwrap();
 
     let path_image_without_saturation = &Path::new("result.png");
-    let final_image = image::open(path_image_without_saturation).unwrap().adjust_contrast(10.0);
+    let final_image = image::open(path_image_without_saturation).unwrap().adjust_contrast(contrast);
     let path_final_result = &Path::new("final.png");
     let fout_final = &mut File::create(path_final_result).unwrap();
     final_image.save(fout_final, image::PNG).unwrap();
