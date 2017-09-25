@@ -58,17 +58,15 @@ fn main() {
     });
 
     let filtered_blurred = filtered.blur(blur);
-    let mut final_image_without_saturation = image::ImageBuffer::new(600, 600);
-    for(x, y, pixel) in final_image_without_saturation.enumerate_pixels_mut() {
+    let mut final_image_without_saturation_buff = image::ImageBuffer::new(600, 600);
+    for(x, y, pixel) in final_image_without_saturation_buff.enumerate_pixels_mut() {
         let pixel_target = blend_image.get_pixel(x, y);
         let mut pixel_source = filtered_blurred.get_pixel(x, y);
         pixel_source.blend(&pixel_target);
         *pixel = image::Rgba(pixel_source.data)
     }
-    final_image_without_saturation.save(&Path::new("result.png")).unwrap();
 
-    let path_image_without_saturation = &Path::new("result.png");
-    let final_image = image::open(path_image_without_saturation).unwrap().adjust_contrast(contrast);
+    let final_image = image::ImageRgba8(final_image_without_saturation_buff).adjust_contrast(contrast);
     let path_final_result = &Path::new("final.png");
     let fout_final = &mut File::create(path_final_result).unwrap();
     final_image.save(fout_final, image::PNG).unwrap();
