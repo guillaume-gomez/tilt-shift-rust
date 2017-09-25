@@ -48,7 +48,6 @@ fn main() {
     // resize image
     let filtered = img.resize_exact(600, 600, FilterType::Nearest);
 
-    // Write the contents of this image to the Writer in PNG format.
     let mask = create_mask(600, 600, 0, 150, 600, 350);
 
     let blend_image = ImageBuffer::from_fn(600, 600, |x, y| {
