@@ -29,7 +29,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 4 {
-        panic!("Missing parameters, example : filename blur_level contrast_leve");
+        panic!("Missing parameters, example : filename blur_level contrast_level");
     };
 
     let file = &args[1];
