@@ -8,3 +8,10 @@ I decided to learn Rust by using the library [Image](https://github.com/PistonDe
 
 ### After tilt shift
 ![original](tilt-shift/timeSquareTiltShift.png)
+
+
+## Compile 
+`cargo build`
+
+## Execute
+`cargo run filename blur_level contrast_level`
