@@ -59,7 +59,7 @@ fn main() {
     // resize image
     let filtered = img.resize_exact(width, height, FilterType::Nearest);
 
-    let mask = create_mask(width, height, 0, 150, height, 350);
+    let mask = create_mask(width, height, 0, height/3, width, height/3);
     let blended_image = blended_image(width, height, &filtered, mask);
 
     let filtered_blurred = filtered.blur(blur);
