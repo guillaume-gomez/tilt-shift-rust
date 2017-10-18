@@ -14,7 +14,7 @@ use image::{
 };
 
 
-fn create_mask (width: u32, height: u32, x_rect: u32, y_rect: u32, width_rect: u32, height_rect: u32) -> GrayImage {
+fn create_mask(width: u32, height: u32, x_rect: u32, y_rect: u32, width_rect: u32, height_rect: u32) -> GrayImage {
     let img_created = ImageBuffer::from_fn(width, height, |x, y| {
         if x >= x_rect && x <= x_rect + width_rect && y >= y_rect && y <= y_rect + height_rect {
             image::Luma([0u8])
@@ -38,7 +38,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 4 {
-        panic!("Missing parameters, example : filename blur_level contrast_level");
+        panic!("Missing parameters, example : filename blur_level contrast_level [output_file_name] [yPointOfInterest] [heightPointOfInterest]");
     };
 
     let file = &args[1];
@@ -46,20 +46,35 @@ fn main() {
     let contrast = args[3].parse::<f32>().unwrap();
 
     println!("Filename '{}' with the blur level '{}' and the contrast '{}'", file, blur, contrast);
+    let img = image::open(&Path::new(&file)).unwrap();
+    let (width, height) = img.dimensions();
 
-    let output_file = if args.len() == 5 {
+    println!("{:?}",&args );
+
+    let output_file = if args.len() >= 5 {
         &args[4]
     } else {
         "result.png"
     };
 
-    let img = image::open(&Path::new(&file)).unwrap();
-    let (width, height) = img.dimensions();
+    let y_point_of_interest = if args.len() >= 6 {
+        args[5].parse::<u32>().unwrap()
+    } else {
+        height / 3
+    };
+
+    let height_point_of_interest = if args.len() >= 7 {
+        args[6].parse::<u32>().unwrap()
+    } else {
+        height / 3
+    };
+
+
 
     // resize image
     let filtered = img.resize_exact(width, height, FilterType::Nearest);
 
-    let mask = create_mask(width, height, 0, height/3, width, height/3);
+    let mask = create_mask(width, height, 0, y_point_of_interest, width, height_point_of_interest);
     let blended_image = blended_image(width, height, &filtered, mask);
 
     let filtered_blurred = filtered.blur(blur);
