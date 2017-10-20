@@ -34,6 +34,28 @@ fn blended_image(width: u32, height: u32, original: &image::DynamicImage, mask: 
     blended_image
 }
 
+fn mix_from_blurred_and_blended_image(width: u32, height: u32, blurred_image: image::DynamicImage, blended_image: image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>> ) -> image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>> {
+    let mut final_image_without_saturation_buff = image::ImageBuffer::new(width, height);
+    for(x, y, pixel) in final_image_without_saturation_buff.enumerate_pixels_mut() {
+        let pixel_target = blended_image.get_pixel(x, y);
+        let mut pixel_source = blurred_image.get_pixel(x, y);
+        pixel_source.blend(&pixel_target);
+        *pixel = image::Rgba(pixel_source.data)
+    }
+    final_image_without_saturation_buff
+}
+
+fn tilt_shift_algorithm(original_image :image::DynamicImage, y_point_of_interest :u32, height_point_of_interest :u32, blur :f32, contrast :f32) -> image::DynamicImage {
+    let (width, height) = original_image.dimensions();
+    let mask = create_mask(width, height, 0, y_point_of_interest, width, height_point_of_interest);
+    let blended_image = blended_image(width, height, &original_image, mask);
+
+    let filtered_blurred = original_image.blur(blur);
+    let final_image_without_saturation_buff = mix_from_blurred_and_blended_image(width, height, filtered_blurred, blended_image);
+
+    return image::ImageRgba8(final_image_without_saturation_buff).adjust_contrast(contrast);
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -47,7 +69,7 @@ fn main() {
 
     println!("Filename '{}' with the blur level '{}' and the contrast '{}'", file, blur, contrast);
     let img = image::open(&Path::new(&file)).unwrap();
-    let (width, height) = img.dimensions();
+    let (_width, height) = img.dimensions();
 
     println!("{:?}",&args );
 
@@ -68,25 +90,7 @@ fn main() {
     } else {
         height / 3
     };
-
-
-
-    // resize image
-    let filtered = img.resize_exact(width, height, FilterType::Nearest);
-
-    let mask = create_mask(width, height, 0, y_point_of_interest, width, height_point_of_interest);
-    let blended_image = blended_image(width, height, &filtered, mask);
-
-    let filtered_blurred = filtered.blur(blur);
-    let mut final_image_without_saturation_buff = image::ImageBuffer::new(width, height);
-    for(x, y, pixel) in final_image_without_saturation_buff.enumerate_pixels_mut() {
-        let pixel_target = blended_image.get_pixel(x, y);
-        let mut pixel_source = filtered_blurred.get_pixel(x, y);
-        pixel_source.blend(&pixel_target);
-        *pixel = image::Rgba(pixel_source.data)
-    }
-
-    let final_image = image::ImageRgba8(final_image_without_saturation_buff).adjust_contrast(contrast);
+    let final_image = tilt_shift_algorithm(img, y_point_of_interest, height_point_of_interest, blur, contrast);
     let path_final_result = &Path::new(output_file);
     let fout_final = &mut File::create(path_final_result).unwrap();
     final_image.save(fout_final, image::PNG).unwrap();
