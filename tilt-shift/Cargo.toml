@@ -5,3 +5,4 @@ authors = ["Gomez Guillaume <guillaume.gomez846@gmail.com>"]
 
 [dependencies]
 image = "*"
+clap = "*"

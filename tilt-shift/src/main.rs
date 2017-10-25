@@ -1,5 +1,8 @@
 //! An example of opening an image.
 extern crate image;
+extern crate clap;
+use clap::{App, Arg};
+
 
 use std::env;
 use std::fs::File;
@@ -7,7 +10,6 @@ use std::path::Path;
 
 use image::{
     GenericImage,
-    FilterType,
     ImageBuffer,
     GrayImage,
     Pixel
@@ -57,39 +59,69 @@ fn tilt_shift_algorithm(original_image :image::DynamicImage, y_point_of_interest
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let matches = App::new("Tilt Shift")
+        .about("Compute the tilt-shift")
+        .version("1.0")
+        .author("Guillaume Gomez. <guillaume.gomez846@gmail.com>")
+        .arg(Arg::with_name("filename")
+                    .help("filename of the source image")
+                    .short("f")
+                    .long("filename")
+                    .takes_value(true)
+                    .required(true)
+                    )
+        .arg(Arg::with_name("blur_level")
+                    .help("the amont of blur in the image")
+                    .short("b")
+                    .long("blur_level")
+                    .takes_value(true)
+                    .required(true))
+        .arg(Arg::with_name("contrast_level")
+                    .help("the level of contrast use in the image")
+                    .short("c")
+                    .long("contrast_level")
+                    .takes_value(true)
+                    .required(true))
+        .arg(Arg::with_name("output_file_name")
+                    .help("filename of the target image")
+                    .short("o")
+                    .long("output_file_name")
+                    .takes_value(true)
+                    .default_value("result.png"))
+        .arg(Arg::with_name("yPointOfInterest")
+                    .help("start of the focus zone")
+                    .short("y")
+                    .takes_value(true)
+                    .long("yOrigin"))
+        .arg(Arg::with_name("heightPointOfInterest")
+                    .help("height of the focus zone")
+                    .short("h")
+                    .takes_value(true)
+                    .long("height"))
+        .get_matches();
 
-    if args.len() < 4 {
-        panic!("Missing parameters, example : filename blur_level contrast_level [output_file_name] [yPointOfInterest] [heightPointOfInterest]");
-    };
+    let file = matches.value_of("filename").unwrap();
+    let blur = matches.value_of("blur_level").unwrap().parse::<f32>().unwrap();
+    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
 
-    let file = &args[1];
-    let blur = args[2].parse::<f32>().unwrap();
-    let contrast = args[3].parse::<f32>().unwrap();
-
-    println!("Filename '{}' with the blur level '{}' and the contrast '{}'", file, blur, contrast);
     let img = image::open(&Path::new(&file)).unwrap();
     let (_width, height) = img.dimensions();
 
-    println!("{:?}",&args );
+    let output_file = matches.value_of("output_file_name").unwrap();
 
-    let output_file = if args.len() >= 5 {
-        &args[4]
-    } else {
-        "result.png"
-    };
 
-    let y_point_of_interest = if args.len() >= 6 {
-        args[5].parse::<u32>().unwrap()
+    let y_point_of_interest = if matches.is_present("yPointOfInterest") {
+        matches.value_of("yPointOfInterest").unwrap().parse::<u32>().unwrap()
     } else {
         height / 3
     };
 
-    let height_point_of_interest = if args.len() >= 7 {
-        args[6].parse::<u32>().unwrap()
+    let height_point_of_interest = if matches.is_present("heightPointOfInterest") {
+        matches.value_of("heightPointOfInterest").unwrap().parse::<u32>().unwrap()
     } else {
         height / 3
     };
+
     let final_image = tilt_shift_algorithm(img, y_point_of_interest, height_point_of_interest, blur, contrast);
     let path_final_result = &Path::new(output_file);
     let fout_final = &mut File::create(path_final_result).unwrap();
