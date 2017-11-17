@@ -4,17 +4,17 @@ I decided to learn Rust by using the library [Image](https://github.com/PistonDe
 ## Example 
 
 ### Original 
-![original](tilt-shift/timeSquare.png)
+![original](timeSquare.png)
 
 ### After tilt shift
-![original](tilt-shift/timeSquareTiltShift.png)
+![original](timeSquareTiltShift.png)
 
 
 ### Original 
-![original](tilt-shift/velodrome.jpg)
+![original](velodrome.jpg)
 
 ### After tilt shift
-![original](tilt-shift/velodromeTiltShift.png)
+![original](velodromeTiltShift.png)
 
 ## Compile 
 `cargo build`
