@@ -3,7 +3,6 @@ extern crate image;
 extern crate clap;
 use clap::{App, Arg};
 
-use std::fs::File;
 use std::path::Path;
 
 use image::{
@@ -35,10 +34,7 @@ fn create_single_image(matches: clap::ArgMatches) {
         height / 3
     };
 
-    let final_image = tilt_shift_module::tilt_shift_algorithm(&img, y_point_of_interest, height_point_of_interest, blur, contrast);
-    let path_final_result = &Path::new(output_file);
-    let fout_final = &mut File::create(path_final_result).unwrap();
-    final_image.save(fout_final, image::PNG).unwrap();
+    tilt_shift_module::create_image(file, output_file, blur, contrast, y_point_of_interest, height_point_of_interest);
 }
 
 fn create_several_images(matches: clap::ArgMatches) {
@@ -66,12 +62,8 @@ fn create_several_images(matches: clap::ArgMatches) {
     let step = 1.0;
 
     while current_blur < blur_max {
-        let final_image = tilt_shift_module::tilt_shift_algorithm(&img, y_point_of_interest, height_point_of_interest, current_blur, contrast);
-        let output_file = format!("{}_{}", matches.value_of("output_file_name").unwrap(), current_blur);
-        let path_final_result = &Path::new(&output_file);
-        let fout_final = &mut File::create(path_final_result).unwrap();
-        final_image.save(fout_final, image::PNG).unwrap();
-
+        let output_file = format!("{}_{}", current_blur, matches.value_of("output_file_name").unwrap());
+        tilt_shift_module::create_image(file, &output_file, current_blur, contrast, y_point_of_interest, height_point_of_interest);
         current_blur = current_blur + step;
     } 
 }
