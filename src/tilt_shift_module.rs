@@ -1,4 +1,6 @@
-use std;
+use std::path::Path;
+use std::fs::File;
+use std::vec;
 extern crate image;
 use image::{
     GenericImage,
@@ -19,7 +21,7 @@ fn create_mask(width: u32, height: u32, x_rect: u32, y_rect: u32, width_rect: u3
     img_created
 }
 
-fn blended_image(width: u32, height: u32, original: &image::DynamicImage, mask: GrayImage) -> image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>> {
+fn blended_image(width: u32, height: u32, original: &image::DynamicImage, mask: GrayImage) -> image::ImageBuffer<image::Rgba<u8>, vec::Vec<u8>> {
     let blended_image = ImageBuffer::from_fn(width, height, |x, y| {
         let pixel_image = original.get_pixel(x, y);
         let pixel_mask = mask.get_pixel(x, y);
@@ -28,7 +30,7 @@ fn blended_image(width: u32, height: u32, original: &image::DynamicImage, mask: 
     blended_image
 }
 
-fn mix_from_blurred_and_blended_image(width: u32, height: u32, blurred_image: image::DynamicImage, blended_image: image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>> ) -> image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>> {
+fn mix_from_blurred_and_blended_image(width: u32, height: u32, blurred_image: image::DynamicImage, blended_image: image::ImageBuffer<image::Rgba<u8>, vec::Vec<u8>> ) -> image::ImageBuffer<image::Rgba<u8>, vec::Vec<u8>> {
     let mut final_image_without_saturation_buff = image::ImageBuffer::new(width, height);
     for(x, y, pixel) in final_image_without_saturation_buff.enumerate_pixels_mut() {
         let pixel_target = blended_image.get_pixel(x, y);
@@ -47,4 +49,12 @@ pub fn tilt_shift_algorithm(original_image: &image::DynamicImage, y_point_of_int
     let filtered_blurred = original_image.blur(blur);
     let final_image_without_saturation_buff = mix_from_blurred_and_blended_image(width, height, filtered_blurred, blended_image);
     return image::ImageRgba8(final_image_without_saturation_buff).adjust_contrast(contrast);
+}
+
+pub fn create_image(filename_image: &str, filename_output: &str, blur: f32, contrast: f32, y_point_of_interest: u32, height_point_of_interest: u32) {
+    let img = image::open(&Path::new(&filename_image)).unwrap();
+    let final_image = self::tilt_shift_algorithm(&img, y_point_of_interest, height_point_of_interest, blur, contrast);
+    let path_final_result = &Path::new(filename_output);
+    let fout_final = &mut File::create(path_final_result).unwrap();
+    final_image.save(fout_final, image::PNG).unwrap();
 }
