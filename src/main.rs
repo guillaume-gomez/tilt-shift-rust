@@ -3,8 +3,6 @@ extern crate image;
 extern crate clap;
 use clap::{App, Arg};
 
-
-use std::env;
 use std::fs::File;
 use std::path::Path;
 
@@ -47,7 +45,7 @@ fn mix_from_blurred_and_blended_image(width: u32, height: u32, blurred_image: im
     final_image_without_saturation_buff
 }
 
-fn tilt_shift_algorithm(original_image :image::DynamicImage, y_point_of_interest :u32, height_point_of_interest :u32, blur :f32, contrast :f32) -> image::DynamicImage {
+fn tilt_shift_algorithm(original_image: &image::DynamicImage, y_point_of_interest :u32, height_point_of_interest :u32, blur :f32, contrast :f32) -> image::DynamicImage {
     let (width, height) = original_image.dimensions();
     let mask = create_mask(width, height, 0, y_point_of_interest, width, height_point_of_interest);
     let blended_image = blended_image(width, height, &original_image, mask);
@@ -56,6 +54,71 @@ fn tilt_shift_algorithm(original_image :image::DynamicImage, y_point_of_interest
     let final_image_without_saturation_buff = mix_from_blurred_and_blended_image(width, height, filtered_blurred, blended_image);
 
     return image::ImageRgba8(final_image_without_saturation_buff).adjust_contrast(contrast);
+}
+
+
+fn create_single_image(matches: clap::ArgMatches) {
+    let file = matches.value_of("filename").unwrap();
+    let blur = matches.value_of("blur_level").unwrap().parse::<f32>().unwrap();
+    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
+
+    let img = image::open(&Path::new(&file)).unwrap();
+    let (_width, height) = img.dimensions();
+
+    let output_file = matches.value_of("output_file_name").unwrap();
+
+
+    let y_point_of_interest = if matches.is_present("yPointOfInterest") {
+        matches.value_of("yPointOfInterest").unwrap().parse::<u32>().unwrap()
+    } else {
+        height / 3
+    };
+
+    let height_point_of_interest = if matches.is_present("heightPointOfInterest") {
+        matches.value_of("heightPointOfInterest").unwrap().parse::<u32>().unwrap()
+    } else {
+        height / 3
+    };
+
+    let final_image = tilt_shift_algorithm(&img, y_point_of_interest, height_point_of_interest, blur, contrast);
+    let path_final_result = &Path::new(output_file);
+    let fout_final = &mut File::create(path_final_result).unwrap();
+    final_image.save(fout_final, image::PNG).unwrap();
+}
+
+fn create_several_images(matches: clap::ArgMatches) {
+    let file = matches.value_of("filename").unwrap();
+    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
+
+    let img = image::open(&Path::new(&file)).unwrap();
+    let (_width, height) = img.dimensions();
+
+    let y_point_of_interest = if matches.is_present("yPointOfInterest") {
+        matches.value_of("yPointOfInterest").unwrap().parse::<u32>().unwrap()
+    } else {
+        height / 3
+    };
+
+    let height_point_of_interest = if matches.is_present("heightPointOfInterest") {
+        matches.value_of("heightPointOfInterest").unwrap().parse::<u32>().unwrap()
+    } else {
+        height / 3
+    };
+    let range: Vec<&str> = matches.value_of("blur_level").unwrap().split("..").collect();
+    let blur_min = range[0].parse::<f32>().unwrap();
+    let blur_max = range[1].parse::<f32>().unwrap();
+    let mut current_blur = blur_min;
+    let step = 1.0;
+
+    while current_blur < blur_max {
+        let final_image = tilt_shift_algorithm(&img, y_point_of_interest, height_point_of_interest, current_blur, contrast);
+        let output_file = format!("{}_{}", matches.value_of("output_file_name").unwrap(), current_blur);
+        let path_final_result = &Path::new(&output_file);
+        let fout_final = &mut File::create(path_final_result).unwrap();
+        final_image.save(fout_final, image::PNG).unwrap();
+
+        current_blur = current_blur + step;
+    } 
 }
 
 fn main() {
@@ -100,30 +163,11 @@ fn main() {
                     .long("height"))
         .get_matches();
 
-    let file = matches.value_of("filename").unwrap();
-    let blur = matches.value_of("blur_level").unwrap().parse::<f32>().unwrap();
-    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
-
-    let img = image::open(&Path::new(&file)).unwrap();
-    let (_width, height) = img.dimensions();
-
-    let output_file = matches.value_of("output_file_name").unwrap();
-
-
-    let y_point_of_interest = if matches.is_present("yPointOfInterest") {
-        matches.value_of("yPointOfInterest").unwrap().parse::<u32>().unwrap()
+    let has_loop = matches.value_of("blur_level").unwrap().contains("..");
+    if has_loop {
+        create_several_images(matches)
     } else {
-        height / 3
-    };
+        create_single_image(matches);  
+    }
 
-    let height_point_of_interest = if matches.is_present("heightPointOfInterest") {
-        matches.value_of("heightPointOfInterest").unwrap().parse::<u32>().unwrap()
-    } else {
-        height / 3
-    };
-
-    let final_image = tilt_shift_algorithm(img, y_point_of_interest, height_point_of_interest, blur, contrast);
-    let path_final_result = &Path::new(output_file);
-    let fout_final = &mut File::create(path_final_result).unwrap();
-    final_image.save(fout_final, image::PNG).unwrap();
 }
