@@ -68,6 +68,19 @@ fn create_several_images(matches: clap::ArgMatches) {
     } 
 }
 
+fn parse_params(param) -> Vec<f32> {
+  let has_loop = param.unwrap().contains("..");  
+  if(has_loop) {
+    let range: Vec<&str> = param.unwrap().split("..").collect();
+    let min = range[0].parse::<f32>().unwrap();
+    let max = range[1].parse::<f32>().unwrap();
+    [ min, max];
+  } else {
+    return [ param.unwrap().parse::<f32>().unwrap() ];
+  }
+}
+
+
 fn main() {
     let matches = App::new("Tilt Shift")
         .about("Compute the tilt-shift")
