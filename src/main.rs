@@ -55,9 +55,9 @@ fn create_several_images(matches: clap::ArgMatches) {
     } else {
         height / 3
     };
-    let range: Vec<&str> = matches.value_of("blur_level").unwrap().split("..").collect();
-    let blur_min = range[0].parse::<f32>().unwrap();
-    let blur_max = range[1].parse::<f32>().unwrap();
+    let range =  parse_params(matches.value_of("blur_level"));
+    let blur_min = range[0];
+    let blur_max = range[1];
     let mut current_blur = blur_min;
     let step = 1.0;
 
