@@ -3,6 +3,8 @@ extern crate image;
 extern crate clap;
 use clap::{App, Arg};
 
+use std::fs;
+
 use std::path::Path;
 
 use image::{
@@ -39,6 +41,8 @@ fn create_single_image(matches: clap::ArgMatches) {
 
 fn create_several_images(matches: clap::ArgMatches) {
     let file = matches.value_of("filename").unwrap();
+    let output_file_folder = "output";
+    fs::create_dir(output_file_folder);
     let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
 
     let img = image::open(&Path::new(&file)).unwrap();
@@ -62,7 +66,7 @@ fn create_several_images(matches: clap::ArgMatches) {
     let step = 1.0;
 
     while current_blur < blur_max {
-        let output_file = format!("{}_{}", current_blur, matches.value_of("output_file_name").unwrap());
+        let output_file = format!("{}/{}_{}", output_file_folder, current_blur, matches.value_of("output_file_name").unwrap());
         tilt_shift_module::create_image(file, &output_file, current_blur, contrast, y_point_of_interest, height_point_of_interest);
         current_blur = current_blur + step;
     } 
