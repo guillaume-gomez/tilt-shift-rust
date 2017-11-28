@@ -16,7 +16,7 @@ mod tilt_shift_module;
 fn create_single_image(matches: clap::ArgMatches) {
     let file = matches.value_of("filename").unwrap();
     let blur = matches.value_of("blur_level").unwrap().parse::<f32>().unwrap();
-    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
+    let saturation =  matches.value_of("saturation_level").unwrap().parse::<f32>().unwrap();
 
     let img = image::open(&Path::new(&file)).unwrap();
     let (_width, height) = img.dimensions();
@@ -36,14 +36,14 @@ fn create_single_image(matches: clap::ArgMatches) {
         height / 3
     };
 
-    tilt_shift_module::create_image(file, output_file, blur, contrast, y_point_of_interest, height_point_of_interest);
+    tilt_shift_module::create_image(file, output_file, blur, saturation, y_point_of_interest, height_point_of_interest);
 }
 
 fn create_several_images(matches: clap::ArgMatches) {
     let file = matches.value_of("filename").unwrap();
     let output_file_folder = "output";
     fs::create_dir(output_file_folder);
-    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
+    let saturation =  matches.value_of("saturation_level").unwrap().parse::<f32>().unwrap();
 
     let img = image::open(&Path::new(&file)).unwrap();
     let (_width, height) = img.dimensions();
@@ -67,7 +67,7 @@ fn create_several_images(matches: clap::ArgMatches) {
 
     while current_blur < blur_max {
         let output_file = format!("{}/{}_{}", output_file_folder, current_blur, matches.value_of("output_file_name").unwrap());
-        tilt_shift_module::create_image(file, &output_file, current_blur, contrast, y_point_of_interest, height_point_of_interest);
+        tilt_shift_module::create_image(file, &output_file, current_blur, saturation, y_point_of_interest, height_point_of_interest);
         current_blur = current_blur + step;
     } 
 }
@@ -104,10 +104,10 @@ fn main() {
                     .long("blur_level")
                     .takes_value(true)
                     .required(true))
-        .arg(Arg::with_name("contrast_level")
-                    .help("the level of contrast use in the image")
-                    .short("c")
-                    .long("contrast_level")
+        .arg(Arg::with_name("saturation_level")
+                    .help("the level of saturation use in the image")
+                    .short("s")
+                    .long("saturation_level")
                     .takes_value(true)
                     .required(true))
         .arg(Arg::with_name("output_file_name")
