@@ -72,19 +72,18 @@ fn create_several_images(matches: clap::ArgMatches) {
     } 
 }
 
-fn parse_params(param: Option<&str>) -> Vec<f32> {
+fn parse_params(param: Option<&str>) -> Vec<i32> {
   let has_loop = param.unwrap().contains("..");  
   if has_loop  {
     let range: Vec<&str> = param.unwrap().split("..").collect();
-    let min = range[0].parse::<f32>().unwrap();
-    let max = range[1].parse::<f32>().unwrap();
-     vec![ min, max]
+    let min = range[0].parse::<i32>().unwrap();
+    let max = range[1].parse::<i32>().unwrap();
+     vec![min, max]
   } else {
-    return vec![ param.unwrap().parse::<f32>().unwrap() ];
+    let val = param.unwrap().parse::<i32>().unwrap();
+    return vec![val, val + 1];
   }
 }
-
-
 
 fn main() {
     let matches = App::new("Tilt Shift")
