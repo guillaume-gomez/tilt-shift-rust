@@ -84,8 +84,6 @@ fn parse_params(param: Option<&str>) -> Vec<f32> {
   }
 }
 
-
-
 fn main() {
     let matches = App::new("Tilt Shift")
         .about("Compute the tilt-shift")
