@@ -43,8 +43,6 @@ fn create_several_images(matches: clap::ArgMatches) {
     let file = matches.value_of("filename").unwrap();
     let output_file_folder = "output";
     fs::create_dir(output_file_folder);
-    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
-
     let img = image::open(&Path::new(&file)).unwrap();
     let (_width, height) = img.dimensions();
 
@@ -59,28 +57,27 @@ fn create_several_images(matches: clap::ArgMatches) {
     } else {
         height / 3
     };
-    let range =  parse_params(matches.value_of("blur_level"));
-    let blur_min = range[0];
-    let blur_max = range[1];
-    let mut current_blur = blur_min;
-    let step = 1.0;
+    let range_blur = parse_params(matches.value_of("blur_level"));
+    let range_saturation = parse_params(matches.value_of("blur_level"));
 
-    while current_blur < blur_max {
-        let output_file = format!("{}/{}_{}", output_file_folder, current_blur, matches.value_of("output_file_name").unwrap());
-        tilt_shift_module::create_image(file, &output_file, current_blur, contrast, y_point_of_interest, height_point_of_interest);
-        current_blur = current_blur + step;
+    for current_blur in range_blur[0]..range_blur[1] {
+        for current_saturation in range_saturation[0]..range_saturation[1] {
+            let output_file = format!("{}/{}_{}", output_file_folder, current_blur + current_saturation, matches.value_of("output_file_name").unwrap());
+            tilt_shift_module::create_image(file, &output_file, (current_blur as f32), (current_saturation as f32), y_point_of_interest, height_point_of_interest);
+        }
     } 
 }
 
-fn parse_params(param: Option<&str>) -> Vec<f32> {
+fn parse_params(param: Option<&str>) -> Vec<i32> {
   let has_loop = param.unwrap().contains("..");  
   if has_loop  {
     let range: Vec<&str> = param.unwrap().split("..").collect();
-    let min = range[0].parse::<f32>().unwrap();
-    let max = range[1].parse::<f32>().unwrap();
-     vec![ min, max]
+    let min = range[0].parse::<i32>().unwrap();
+    let max = range[1].parse::<i32>().unwrap();
+     vec![min, max]
   } else {
-    return vec![ param.unwrap().parse::<f32>().unwrap() ];
+    let val = param.unwrap().parse::<i32>().unwrap();
+    return vec![val, val + 1];
   }
 }
 
