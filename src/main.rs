@@ -16,7 +16,7 @@ mod tilt_shift_module;
 fn create_single_image(matches: clap::ArgMatches) {
     let file = matches.value_of("filename").unwrap();
     let blur = matches.value_of("blur_level").unwrap().parse::<f32>().unwrap();
-    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
+    let saturation =  matches.value_of("saturation_level").unwrap().parse::<f32>().unwrap();
 
     let img = image::open(&Path::new(&file)).unwrap();
     let (_width, height) = img.dimensions();
@@ -36,13 +36,12 @@ fn create_single_image(matches: clap::ArgMatches) {
         height / 3
     };
 
-    tilt_shift_module::create_image(file, output_file, blur, contrast, y_point_of_interest, height_point_of_interest);
+    tilt_shift_module::create_image(file, output_file, blur, saturation, y_point_of_interest, height_point_of_interest);
 }
 
 fn create_several_images(matches: clap::ArgMatches) {
     let file = matches.value_of("filename").unwrap();
-    let contrast =  matches.value_of("contrast_level").unwrap().parse::<f32>().unwrap();
-
+    
     let img = image::open(&Path::new(&file)).unwrap();
     let (_width, height) = img.dimensions();
 
@@ -57,7 +56,6 @@ fn create_several_images(matches: clap::ArgMatches) {
     } else {
         height / 3
     };
-
     let output_file_folder = if matches.is_present("outputFolderName") {
         matches.value_of("outputFolderName").unwrap()
     } else {
@@ -65,28 +63,29 @@ fn create_several_images(matches: clap::ArgMatches) {
     };
     fs::create_dir(output_file_folder);
     
-    let range =  parse_params(matches.value_of("blur_level"));
-    let blur_min = range[0];
-    let blur_max = range[1];
-    let mut current_blur = blur_min;
-    let step = 1.0;
 
-    while current_blur < blur_max {
-        let output_file = format!("{}/{}_{}", output_file_folder, current_blur, matches.value_of("output_file_name").unwrap());
-        tilt_shift_module::create_image(file, &output_file, current_blur, contrast, y_point_of_interest, height_point_of_interest);
-        current_blur = current_blur + step;
-    } 
+    let range_blur = parse_params(matches.value_of("blur_level"));
+    let range_saturation = parse_params(matches.value_of("saturation_level"));
+
+    for current_blur in range_blur[0]..range_blur[1] {
+        for current_saturation in range_saturation[0]..range_saturation[1] {
+            let output_file = format!("{}/{}_{}_{}", output_file_folder, current_blur , current_saturation, matches.value_of("output_file_name").unwrap());
+            tilt_shift_module::create_image(file, &output_file, (current_blur as f32), (current_saturation as f32), y_point_of_interest, height_point_of_interest);
+            println!("image '{}' with blur_level = '{}' and saturation_level = '{}' generated", output_file, current_blur, current_saturation);
+        }
+    }
 }
 
-fn parse_params(param: Option<&str>) -> Vec<f32> {
-  let has_loop = param.unwrap().contains("..");  
+fn parse_params(param: Option<&str>) -> Vec<i32> {
+  let has_loop = param.unwrap().contains("..");
   if has_loop  {
     let range: Vec<&str> = param.unwrap().split("..").collect();
-    let min = range[0].parse::<f32>().unwrap();
-    let max = range[1].parse::<f32>().unwrap();
-     vec![ min, max]
+    let min = range[0].parse::<i32>().unwrap();
+    let max = range[1].parse::<i32>().unwrap();
+     vec![min, max + 1]
   } else {
-    return vec![ param.unwrap().parse::<f32>().unwrap() ];
+    let val = param.unwrap().parse::<i32>().unwrap();
+    return vec![val, val + 1];
   }
 }
 
@@ -108,10 +107,10 @@ fn main() {
                     .long("blur_level")
                     .takes_value(true)
                     .required(true))
-        .arg(Arg::with_name("contrast_level")
-                    .help("the level of contrast use in the image")
-                    .short("c")
-                    .long("contrast_level")
+        .arg(Arg::with_name("saturation_level")
+                    .help("the level of saturation use in the image")
+                    .short("s")
+                    .long("saturation_level")
                     .takes_value(true)
                     .required(true))
         .arg(Arg::with_name("output_file_name")
@@ -142,7 +141,7 @@ fn main() {
     if has_loop {
         create_several_images(matches)
     } else {
-        create_single_image(matches);  
+        create_single_image(matches);
     }
 
 }
