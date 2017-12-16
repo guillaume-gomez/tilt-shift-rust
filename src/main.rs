@@ -41,9 +41,7 @@ fn create_single_image(matches: clap::ArgMatches) {
 
 fn create_several_images(matches: clap::ArgMatches) {
     let file = matches.value_of("filename").unwrap();
-    let output_file_folder = "output";
-    fs::create_dir(output_file_folder);
-
+    
     let img = image::open(&Path::new(&file)).unwrap();
     let (_width, height) = img.dimensions();
 
@@ -58,6 +56,14 @@ fn create_several_images(matches: clap::ArgMatches) {
     } else {
         height / 3
     };
+    let output_file_folder = if matches.is_present("outputFolderName") {
+        matches.value_of("outputFolderName").unwrap()
+    } else {
+        "output"
+    };
+    fs::create_dir(output_file_folder);
+    
+
     let range_blur = parse_params(matches.value_of("blur_level"));
     let range_saturation = parse_params(matches.value_of("saturation_level"));
 
@@ -123,6 +129,12 @@ fn main() {
                     .short("h")
                     .takes_value(true)
                     .long("height"))
+        .arg(Arg::with_name("outputFolderName")
+                    .help("output folder name")
+                    .short("w")
+                    .takes_value(true)
+                    .long("folder_name"))
+        
         .get_matches();
 
     let has_loop = matches.value_of("blur_level").unwrap().contains("..");
