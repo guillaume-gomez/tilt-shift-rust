@@ -131,7 +131,7 @@ fn main() {
                     .long("height"))
         .arg(Arg::with_name("outputFolderName")
                     .help("output folder name")
-                    .short("of")
+                    .short("w")
                     .takes_value(true)
                     .long("folder_name"))
         
