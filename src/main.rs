@@ -70,7 +70,7 @@ fn create_several_images(matches: clap::ArgMatches) {
     for current_blur in range_blur[0]..range_blur[1] {
         for current_saturation in range_saturation[0]..range_saturation[1] {
             let output_file = format!("{}/{}_{}_{}", output_file_folder, current_blur , current_saturation, matches.value_of("output_file_name").unwrap());
-            tilt_shift_module::create_image(file, &output_file, (current_blur as f32), (current_saturation as f32), y_point_of_interest, height_point_of_interest);
+            tilt_shift_module::create_image(file, &output_file, current_blur as f32, current_saturation as f32, y_point_of_interest, height_point_of_interest);
             println!("image '{}' with blur_level = '{}' and saturation_level = '{}' generated", output_file, current_blur, current_saturation);
         }
     }
